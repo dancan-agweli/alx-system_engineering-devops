@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Configures Nginx to perform a 301 Moved Permanently redirection
+
+# Check if Nginx is installed
+if ! command -v nginx &> /dev/null; then
+    echo "Nginx is not installed. Please install Nginx first."
+    exit 1
+fi
+
+# Create a configuration file for the redirection
+echo "server {
+    listen 80;
+    listen [::]:80;
+    server_name _;
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+}" > /etc/nginx/sites-available/redirect_me
+
+# Create a symbolic link to enable the new configuration
+ln -s /etc/nginx/sites-available/redirect_me /etc/nginx/sites-enabled/
+
+# Test Nginx configuration for errors
+if nginx -t | grep -q "syntax is okay" && nginx -t | grep -q "test is successful"; then
+    # Reload Nginx to apply the configuration
+    service nginx reload
+    echo "Nginx configuration reloaded successfully."
+else
+    echo "Nginx configuration test failed. Please check the configuration."
+    exit 1
+fi
+
+exit 0
+
