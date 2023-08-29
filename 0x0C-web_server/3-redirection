@@ -1,24 +1,28 @@
 #!/usr/bin/env bash
-# Configures Nginx to perform a 301 Moved Permanently redirection
+# Configures an Nginx server so that /redirect_me redirects to another page.
+# The redirection is configured as a "301 Moved Permanently"
 
-# Check if Nginx is installed
-if ! command -v nginx &> /dev/null; then
-    echo "Nginx is not installed. Please install Nginx first."
-    exit 1
-fi
+# Update package repositories
+apt-get update
 
-# Create a configuration file for the redirection
-echo "server {
+# Install Nginx
+apt-get install -y nginx
+
+# Create the HTML directory and index.html file
+mkdir -p /etc/nginx/html
+echo "Hello World!" > /etc/nginx/html/index.html
+
+# Configure Nginx for redirection
+printf %s "server {
     listen 80;
-    listen [::]:80;
-    server_name _;
-    location /redirect_me {
-        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
-    }
-}" > /etc/nginx/sites-available/redirect_me
+    listen [::]:80 default_server;
+    root   /etc/nginx/html;
+    index  index.html index.htm;
 
-# Create a symbolic link to enable the new configuration
-ln -s /etc/nginx/sites-available/redirect_me /etc/nginx/sites-enabled/
+    location /redirect_me {
+        return 301 http://cuberule.com/;
+    }
+}" > /etc/nginx/sites-available/default
 
 # Test Nginx configuration for errors
 if nginx -t | grep -q "syntax is okay" && nginx -t | grep -q "test is successful"; then
