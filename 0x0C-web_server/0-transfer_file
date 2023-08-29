@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+# This script transfers a file to a remote server using scp.
+
+# Check the number of command-line arguments
+if [ $# -lt 3 ]; then
+    echo "Usage: $0 PATH_TO_FILE IP USERNAME [PATH_TO_SSH_KEY]"
+    exit 1
+fi
+
+# Assign command-line arguments to variables
+PATH_TO_FILE="$1"
+IP="$2"
+USERNAME="$3"
+SSH_KEY="$4"
+
+# Check if SSH key is provided, and construct the scp command accordingly
+if [ -z "$SSH_KEY" ]; then
+    scp -o StrictHostKeyChecking=no "$PATH_TO_FILE" "${USERNAME}@${IP}:~/"
+else
+    scp -o StrictHostKeyChecking=no -i "$SSH_KEY" "$PATH_TO_FILE" "${USERNAME}@${IP}:~/"
+fi
+
+# Check the exit status of scp
+if [ $? -eq 0 ]; then
+    echo "File successfully transferred to the server."
+else
+    echo "Error: File transfer to the server failed."
+    exit 1
+fi
+
