@@ -1,15 +1,4 @@
 #!/usr/bin/env bash
-
-# Update package list and install Apache (if not already installed)
-apt-get update
-apt-get install -y apache2
-
-# Modify the Apache configuration to set the ServerName
-echo "ServerName localhost" >> /etc/apache2/apache2.conf
-
-# Start the Apache service
+# Run Apache on the holbertonschool/265-0 Docker container.
+echo "ServerName localhost" >> /etc/apache2.conf
 service apache2 start
-
-# Keep the container running
-tail -f /dev/null
-
