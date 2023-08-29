@@ -1,42 +1,37 @@
-# Puppet manifest to install and configure Nginx
+# Install Nginx web server with Puppet
+include stdlib
 
-# Install Nginx package
+$content = "\trewrite ^/redirect_me/$ https://www.youtube.com/watch?v=QH2-TGUlwu4 permanent;"
+
+exec { 'update packages':
+  command => '/usr/bin/apt-get update',
+}
+
+exec { 'restart nginx':
+  command => '/usr/sbin/service nginx restart',
+  require => Package['nginx'],
+}
+
 package { 'nginx':
-  ensure => 'installed',
+  ensure  => 'installed',
+  require => Exec['update packages'],
 }
 
-# Create the HTML directory
-file { '/etc/nginx/html':
-  ensure => 'directory',
+file { '/var/www/html/index.html':
+  ensure  => 'present',
+  content => 'Hello World',  # Change content here
+  mode    => '0644',
+  owner   => 'root',
+  group   => 'root',
 }
 
-# Configure the index.html file
-file { '/etc/nginx/html/index.html':
-  content => 'Hello World!',
-}
-
-# Configure the Nginx site
-file { '/etc/nginx/sites-available/default':
-  content => template('nginx/default.erb'),
-}
-
-# Create a custom 404 page
-file { '/etc/nginx/html/404.html':
-  content => 'Ceci n\'est pas une page',
-}
-
-# Set up the redirection rule
-nginx::resource::location { '/redirect_me':
-  location => '~ ^/redirect_me',
+file_line { 'Set 301 redirection':
   ensure   => 'present',
-  proxy    => 'http://cuberule.com/',
+  after    => 'server_name\ _;',
+  path     => '/etc/nginx/sites-available/default',
+  multiple => true,
+  line     => $content,
+  notify   => Exec['restart nginx'],
+  require  => File['/var/www/html/index.html'],
 }
-
-# Ensure Nginx is running and enabled
-service { 'nginx':
-  ensure    => 'running',
-  enable    => true,
-  subscribe => File['/etc/nginx/sites-available/default'],
-}
-
 
