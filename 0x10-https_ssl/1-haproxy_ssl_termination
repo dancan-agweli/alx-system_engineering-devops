@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Replace with your actual domain
 DOMAIN="ag-weli.tech"
