@@ -1,19 +1,35 @@
 #!/usr/bin/env bash
-# Usage: ./1-world_wide_web <domain> <subdomain>
-# Display information about subdomains.
 
-domain_information () {
-    line=$(dig "$2"."$1" | grep -A1 'ANSWER SECTION:' | tr '\t' '\n' | tail -2 | tr '\n' ' ')
-    echo "$2 $line" | awk '{print "The subdomain " $1 " is a " $2 " record and points to " $3}'
+# Check for the required arguments
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <domain> [subdomain]"
+    exit 1
+fi
+
+domain="$1"
+subdomain="$2"
+
+# Define subdomains to audit
+subdomains=("www" "lb-01" "web-01" "web-02")
+
+# Function to fetch information for a subdomain
+fetch_subdomain_info() {
+    sub="$1"
+    info=$(dig "$sub.$domain" +short)
+
+    if [ -n "$info" ]; then
+        echo "The subdomain $sub is a $(dig "$sub.$domain" +short -t TYPE) record and points to $info"
+    else
+        echo "The subdomain $sub does not exist or could not be resolved"
+    fi
 }
 
-if [ "$#" == 1 ]
-then
-  domain_information "$1" "www"
-  domain_information "$1" "lb-01"
-  domain_information "$1" "web-01"
-  domain_information "$1" "web-02"
-elif [ "$#" == 2 ]
-then
-  domain_information "$1" "$2"
+# Display information for the specified subdomain or all subdomains
+if [ -n "$subdomain" ]; then
+    fetch_subdomain_info "$subdomain"
+else
+    for sub in "${subdomains[@]}"; do
+        fetch_subdomain_info "$sub"
+    done
 fi
+
