@@ -1,12 +1,18 @@
-# Open a CSV file for writing
-with open("{}.csv".format(u_id), "w", newline="") as csvfile:
-    writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-    
-    # Write a header row to the CSV file
-    writer.writerow(["User ID", "Username", "Completed", "Title"])
+#!/usr/bin/python3
+"""Exports to-do list information for a given employee ID to CSV format."""
+import csv
+import requests
+import sys
 
-    # Write each to-do item to the CSV file
-    for t in todos:
-        row = [u_id, username, t.get("completed"), t.get("title")]
-        writer.writerow(row)
+if __name__ == "__main__":
+    u_id = sys.argv[1]
+    url = "https://jsonplaceholder.typicode.com/"
+    user = requests.get(url + "users/{}".format(u_id)).json()
+    username = user.get("username")
+    todos = requests.get(url + "todos", params={"userId": u_id}).json()
 
+    with open("{}.csv".format(u_id), "w", newline="") as csvfile:
+        writer = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
+        [writer.writerow(
+            [u_id, username, t.get("completed"), t.get("title")]
+        ) for t in todos]
